@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import json
 import jsonschema
 from jsonschema import validate
-from utils import openai, firebase
+from src.utils import openai, firebase
 
 app = Flask(__name__)
 
