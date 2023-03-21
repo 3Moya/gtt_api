@@ -1,8 +1,5 @@
 import openai
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 ENGINE = 'text-davinci-003'
 PROMPT_MAX_TOKENS = 2048
