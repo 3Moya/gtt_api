@@ -25,20 +25,29 @@ def __count_tokens(text: str) -> int:
     return token_count
 
 def __build_prompt(messages: list) -> str:
-    prompt = PROMPT_ENGINEERING + '\n## MESSAGES:\n' + str(messages)
+    context = ''
 
-    while __count_tokens(prompt) > PROMPT_MAX_TOKENS:
-        prompt = PROMPT_ENGINEERING + '\n## MESSAGES:\n' + str(messages[2:])
+    for message in messages:
+        context += message['role'] + ': ' + message['content'] + '\n'
+
+    prompt = PROMPT_ENGINEERING + context
 
     return prompt
 
 def get_completion(messages: list) -> str:
+    prompt = __build_prompt(messages)
+
+    while __count_tokens(prompt) > PROMPT_MAX_TOKENS:
+        prompt = __build_prompt(messages[2:])
+
+    print(prompt)
+
     completion = openai.Completion.create(
         engine=ENGINE,
-        prompt=__build_prompt(messages),
+        prompt=prompt,
         max_tokens=MAX_TOKENS,
         temperature=TEMPERATURE)
     
-    completion = completion.choices[0].text.strip()
+    completion = completion.choices[0].text.strip().replace('assistant: ', '')
 
     return completion
