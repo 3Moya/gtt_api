@@ -6,10 +6,6 @@ from src.utils import openai, firebase
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
-def home():
-    return jsonify({"home": "home"}), 200
-
 @app.route('/chat', methods=['GET'])
 def chat():
     try:
