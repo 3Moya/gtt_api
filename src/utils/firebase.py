@@ -1,11 +1,8 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-CERT = {
+cred = credentials.Certificate({
     "type": os.getenv('TYPE'),
     "project_id": os.getenv('PROJECT_ID'),
     "private_key_id": os.getenv('PRIVATE_KEY_ID'),
@@ -15,10 +12,10 @@ CERT = {
     "auth_uri": os.getenv('AUTH_URI'),
     "token_uri": os.getenv('TOKEN_URI'),
     "auth_provider_x509_cert_url": os.getenv('AUTH_PROVIDER_X509_CERT_URL'),
-    "client_x509_cert_url": os.getenv('CLIENT_X509_CERT_URL')
-}
+    "client_x509_cert_url": os.getenv('CLIENT_X509_CERT_URL')})
 
-cred = credentials.Certificate(CERT)
+# cred = credentials.Certificate('test-bd-gtt-firebase-adminsdk-f5483-1e3464f92e.json')
+
 firebase_admin.initialize_app(cred)
 
 def set_chat(data: dict, completion: str):
