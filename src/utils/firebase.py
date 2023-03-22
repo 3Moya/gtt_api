@@ -4,16 +4,14 @@ from firebase_admin import credentials, firestore
 cred = credentials.Certificate('test-bd-gtt-firebase-adminsdk-f5483-1e3464f92e.json')
 firebase_admin.initialize_app(cred)
 
-def set_chat(data: dict, completion: str):
-    chat_ref = firestore.client().collection('chats').document(data['id'])
-    messages_ref = chat_ref.collection('messages')
-    messages = data['messages']
+def set_input(user_input: dict, nearest_neighbor: str, completion: str):
+    input_ref = firestore.client().collection('input').document()
 
-    for i, message in enumerate(messages):
-        messages_ref.document(str(i)).set(message)
-        messages_ref.document(str(len(messages))).set({
-            "role": "assistant",
-            "content": completion})
+    input_ref.set({
+        "user_input": user_input,
+        "nearest_neighbor": nearest_neighbor,
+        "completion": completion
+    })
         
 def get_questions_answers():
     questions_answers_ref = firestore.client().collection('questions_answers')

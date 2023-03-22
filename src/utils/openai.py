@@ -9,6 +9,8 @@ from openai.embeddings_utils import (
     distances_from_embeddings,
     indices_of_nearest_neighbors_from_distances)
 
+DISTANCE_ARTICLES = .18
+DISTANCE_QUESTIONS = .15
 EMBEDDING_MODEL = 'text-embedding-ada-002'
 EMBEDDING_CACHE_PATH = 'data/category_embedding_cache.pkl'
 MODEL = 'gpt-3.5-turbo'
@@ -63,7 +65,7 @@ def recommendations_from_strings(
     recommendations = []
 
     for i in indices_of_nearest_neighbors:
-        if query_string == strings[i]: continue
+        # if query_string == strings[i]: continue
         if k_counter >= k_nearest_neighbors: break
 
         k_counter += 1
@@ -82,19 +84,23 @@ def get_article_recommendations(query: str) -> list:
     articles_fb = firebase.get_articles()
     articles = [element['title'] for element in articles_fb]
 
-    recommendations = recommendations_from_strings(articles, query, 10)
+    recommendations = recommendations_from_strings(articles, query, 5)
 
     recommended_articles = []
 
     print("\nRecomendaciones Artículos:\n")
-    for recommendation in recommendations:
-        recommended_articles.append({
-            "title": recommendation['string']})
 
-        print({
-            "distance": recommendation['distance'],
-            "recommendation": recommendation['string']
-        })
+    for recommendation in recommendations:
+        distance = recommendation['distance']
+
+        if distance < DISTANCE_ARTICLES:
+            recommended_articles.append({
+                "title": recommendation['string']})
+
+            print({
+                "distance": recommendation['distance'],
+                "recommendation": recommendation['string']
+            })
 
     return recommended_articles
 
@@ -102,8 +108,13 @@ def get_answer(question: str) -> dict:
     questions_fb = firebase.get_questions_answers()
     questions = [element['question'] for element in questions_fb]
 
-    recommendations = recommendations_from_strings(questions, question['content'], 10)
+    recommendations = recommendations_from_strings(questions, question['content'], 5)
     answer = questions_fb[recommendations[0]['index']]
+    nearest_neighbor = recommendations[0]['string']
+
+    if recommendations[0]['distance'] > DISTANCE_QUESTIONS:
+        answer = {"question": "", "answer": ""}
+        nearest_neighbor = ''
 
     print("\nRecomendaciones Preguntas:\n")
     for recommendation in recommendations:
@@ -112,7 +123,7 @@ def get_answer(question: str) -> dict:
             "recommendation": recommendation['string']
         })
 
-    return answer
+    return answer, nearest_neighbor
 
 def __count_tokens(text: str) -> int:
     token_count = len(text.split())
@@ -122,22 +133,24 @@ def __count_tokens(text: str) -> int:
 def __build_prompt(messages: list) -> list:
     messages = [{"role": "user", "content": message['question']} for message in messages]
     last_msg = messages[-1]
-    answer = get_answer(last_msg)['answer']
+    answer, nearest_neighbor = get_answer(last_msg)
+    answer = answer['answer']
 
     system = PROMPT_ENGINEERING + '"""' + answer + '"""'
 
     system = [{"role": "system", "content": system}]
     prompt = system + messages
 
-    return prompt
+    return prompt, nearest_neighbor
 
 def get_completion(messages: list) -> str:
-    prompt = __build_prompt(messages)
+    prompt, nearest_neighbor = __build_prompt(messages)
 
     while __count_tokens(str(prompt)) > PROMPT_MAX_TOKENS:
         prompt = __build_prompt(messages[2:])
 
-    # print(prompt)
+    print('\nPrompt:\n')
+    [print(element, '\n') for element in prompt]
 
     completion = openai.ChatCompletion.create(
         model=MODEL,
@@ -147,4 +160,4 @@ def get_completion(messages: list) -> str:
     
     completion = completion.choices[0]['message']['content'].strip()
 
-    return completion
+    return completion, nearest_neighbor
