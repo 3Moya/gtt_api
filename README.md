@@ -1,7 +1,7 @@
 # Chatbot para nuestro cliente gTt-VIH
 Este proyecto consiste en un chatbot implementado con Python y Flask, que utiliza una base de datos en Firebase para almacenar las preguntas y respuestas de los usuarios, y una imagen Docker para facilitar su despliegue en AWS EC2, petición de la organización gTt que nos permitio involucrarnos de lleno en un proyecto social para dar voz y visbilidad a este colectivo.
 
-Hemos creado una Base de Datos propia con los datos visuales de la misma pagina de ![gTt-Vih](http://gtt-vih.org), esos datos nos han servido para hacer un end-to-end con el usuario, dando una respuesta a la pregunta realizada por el usuario y devolviendo articulos relacionados con la pregunta.
+Hemos creado una Base de Datos propia con los datos visuales de la misma pagina de [!gTt-Vih](http://gtt-vih.org), esos datos nos han servido para hacer un end-to-end con el usuario, dando una respuesta a la pregunta realizada por el usuario y devolviendo articulos relacionados con la pregunta.
 
 ## Instalación
 
