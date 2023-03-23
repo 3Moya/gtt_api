@@ -8,6 +8,20 @@ app = Flask(__name__)
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    """
+    Maneja las solicitudes para el endpoint '/chat' del servidor.
+    Valida el JSON recibido de la solicitud con el esquema en 
+    'schemas/chat_request_schema.json'.
+    Obtiene la respuesta del modelo de OpenAI para la pregunta en la solicitud.
+    Registra la entrada del usuario en Firebase.
+    Retorna un JSON con la respuesta del modelo de OpenAI, recomendaciones de 
+    artículos relacionados, y la información de contacto.
+    
+    Returns:
+        JSON: JSON con la respuesta del modelo de OpenAI, recomendaciones de 
+        artículos relacionados y la información de contacto.
+    """
+
     try:
         data = request.json
 
