@@ -42,6 +42,25 @@ def embedding_from_string(
     model: str = EMBEDDING_MODEL,
     embedding_cache=embedding_cache
 ) -> list:
+    """
+    Obtiene la representación vectorial de un texto utilizando un modelo de 
+    embeddings de OpenAI.
+    Si el texto ya ha sido procesado antes y se encuentra en la cache, se 
+    obtiene directamente de la cache.
+    Si el texto no ha sido procesado antes, se calcula su representación 
+    vectorial y se guarda en la cache.
+    
+    Args:
+        string (str): texto a procesar
+        model (str, optional): modelo de embeddings de OpenAI a utilizar. Por 
+        defecto, EMBEDDING_MODEL.
+        embedding_cache (dict, optional): diccionario que almacena las 
+        representaciones vectoriales ya calculadas. Por defecto, embedding_cache.
+
+    Returns:
+        list: lista de floats que representa la representación vectorial del texto
+    """
+    
     if (string, model) not in embedding_cache.keys():
         embedding_cache[(string, model)] = get_embedding(string, model)
 
@@ -56,6 +75,26 @@ def recommendations_from_strings(
     k_nearest_neighbors: int=1,
     model=EMBEDDING_MODEL
 ) -> list:
+    """
+    Obtiene las k recomendaciones más cercanas a un string de consulta a 
+    partir de una lista de strings utilizando embeddings y métrica de 
+    distancia coseno.
+
+    Args:
+        strings (list): Lista de strings a partir de los cuales obtener las 
+        recomendaciones.
+        query_string (str): El string de consulta a partir del cual obtener 
+        las recomendaciones.
+        k_nearest_neighbors (int): El número de recomendaciones más cercanas a 
+        obtener. Por defecto, 1.
+        model: El modelo pre-entrenado de OpenAI a utilizar para obtener los 
+        embeddings. Por defecto, 'text-embedding-ada-002'.
+
+    Returns:
+        list: Lista de diccionarios con información sobre las k recomendaciones 
+        más cercanas, ordenados de menor a mayor distancia con respecto al 
+        string de consulta.
+    """
     embeddings = [embedding_from_string(string, model=model) for string in strings]
     query_embedding = embedding_from_string(query_string, model=model)
     distances = distances_from_embeddings(query_embedding, embeddings, distance_metric='cosine')
@@ -81,6 +120,20 @@ def recommendations_from_strings(
     return recommendations
 
 def get_article_recommendations(query: str) -> list:
+    """
+    Obtiene las recomendaciones de artículos más cercanos a la consulta dada, 
+    utilizando la función recommendations_from_strings y los artículos 
+    almacenados en firebase.
+
+    Args:
+        query (str): Consulta a comparar con los artículos para encontrar las 
+        recomendaciones más cercanas.
+
+    Returns:
+        list: Una lista de diccionarios con las recomendaciones de artículos 
+        más cercanos a la consulta dada, que contienen el título del artículo.
+    """
+
     articles_fb = firebase.get_articles()
     articles = [element['title'] for element in articles_fb]
 
@@ -105,6 +158,20 @@ def get_article_recommendations(query: str) -> list:
     return recommended_articles
 
 def get_answer(question: str) -> dict:
+    """
+    Devuelve una respuesta y una cadena que representa la pregunta más cercana 
+    basándose en una pregunta dada.
+
+    Args:
+        question (str): La pregunta para la que se desea obtener una respuesta.
+
+    Returns:
+        answer (dict): Un diccionario que contiene la respuesta a la pregunta 
+        dada.
+        nearest_neighbor (str): Una cadena que representa la pregunta más 
+        cercana a la pregunta dada.
+    """
+
     questions_fb = firebase.get_questions_answers()
     questions = [element['question'] for element in questions_fb]
 
@@ -126,11 +193,39 @@ def get_answer(question: str) -> dict:
     return answer, nearest_neighbor
 
 def __count_tokens(text: str) -> int:
+    """
+    Cuenta el número de tokens en un texto dado.
+    Un token se define como una secuencia de caracteres separados por un 
+    espacio en blanco.
+
+    Args:
+        text (str): El texto a contar tokens.
+
+    Returns:
+        int: El número de tokens en el texto.
+    """
+
     token_count = len(text.split())
 
     return token_count
 
 def __build_prompt(messages: list) -> list:
+    """
+    Construye un prompt para el modelo gpt-3.5-turbo a partir de una lista de 
+    mensajes.
+    Utiliza la función "get_answer" para obtener la respuesta y el vecino más 
+    cercano.
+
+    Args:
+        messages (list): Una lista de diccionarios que contienen información de los mensajes.
+
+    Returns:
+        prompt (list): Una lista de diccionarios que contienen la información 
+        necesaria para el prompt.
+        nearest_neighbor (str): Una cadena que representa la pregunta más 
+        cercana a la pregunta dada.
+    """
+
     messages = [{"role": "user", "content": message['question']} for message in messages]
     last_msg = messages[-1]
     answer, nearest_neighbor = get_answer(last_msg)
@@ -144,6 +239,20 @@ def __build_prompt(messages: list) -> list:
     return prompt, nearest_neighbor
 
 def get_completion(messages: list) -> str:
+    """
+    Obtiene una respuesta de gpt-3.5-turbo a partir de una lista de mensajes.
+    Construye una lista de diccionarios de acuerdo a los mensajes, y utiliza 
+    la API de OpenAI para generar un mensaje de respuesta.
+
+    Args:
+        messages (list): Una lista de diccionarios que contienen información de los mensajes.
+
+    Returns:
+        completion (str): La respuesta generada por gpt-3.5-turbo.
+        nearest_neighbor (str): Una cadena que representa la pregunta más 
+        cercana a la pregunta dada.
+    """
+
     prompt, nearest_neighbor = __build_prompt(messages)
 
     while __count_tokens(str(prompt)) > PROMPT_MAX_TOKENS:
