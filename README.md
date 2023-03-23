@@ -25,8 +25,7 @@ El chatbot responde a las preguntas que los usuarios envían en formato JSON a t
 El formato esperado de la petición es el siguiente:
 ```
 {
-    "question": "¿Cuál es la capital de España?",
-    "user_id": "123456"
+    "question": "¿Cuál es la capital de España?"
 }
 ```
 El chatbot responderá con un JSON que incluye la respuesta a la pregunta, una lista de recomendaciones de lectura relacionadas y una lista de formas de contacto para más información.
