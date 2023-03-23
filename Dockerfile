@@ -15,4 +15,4 @@ COPY src /app
 CMD ["python", "app.py"]
 
 # Expose port 5000 to allow external connections to the container
-EXPOSE 5000
+EXPOSE 443

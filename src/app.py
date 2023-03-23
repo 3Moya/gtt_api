@@ -3,8 +3,10 @@ import json
 import jsonschema
 from jsonschema import validate
 from utils import openai, firebase
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -48,4 +50,6 @@ def chat():
 if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
+        port=443,
+        ssl_context='adhoc',
         debug=True)
