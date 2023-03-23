@@ -15,7 +15,10 @@ Con el Docker desktop inicializado, ejecuta en la terminal:
 2. docker pull 3moya/gtt
 3. docker run -tp 5000:5000 --name gtt --env-file .env 3moya/gtt
 
+###  Visualización Web server
+Accede a nuestra aplicación web a traves de este link con esta estructura:
 
+``` ec2-3-128-94-58.us-east-2.compute.amazonaws.com:5000 ```
 # Uso
 El chatbot responde a las preguntas que los usuarios envían en formato JSON a través de una petición POST a la ruta /chat del servidor Flask, que lo puede ejecutar tanto con POSTMAN o cualquier otro software alternativo.
 
@@ -27,11 +30,6 @@ El formato esperado de la petición es el siguiente:
 }
 
 El chatbot responderá con un JSON que incluye la respuesta a la pregunta, una lista de recomendaciones de lectura relacionadas y una lista de formas de contacto para más información.
-
-###  Visualización Web server
-Accede a nuestra aplicación web a traves de este link con esta estructura:
-
-``` ec2-3-128-94-58.us-east-2.compute.amazonaws.com:5000 ```
 
 # Estructura del repositorio
 
@@ -52,6 +50,7 @@ Accede a nuestra aplicación web a traves de este link con esta estructura:
 ```
 
 # Librerias necesarias para el proyecto
+```
 from flask import Flask, request, jsonify
 import json
 import jsonschema
@@ -70,6 +69,4 @@ from openai.embeddings_utils import (
     get_embedding,
     distances_from_embeddings,
     indices_of_nearest_neighbors_from_distances)
-
-Licencia
-Este proyecto está licenciado bajo la Licencia MIT.
+```
